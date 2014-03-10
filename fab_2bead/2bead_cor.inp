@@ -1,0 +1,94 @@
+! Open and read amino acid topology file
+
+open read card unit 20 name "top_all27_prot_na.rtf"
+read rtf card unit 20
+close unit 20
+
+
+! Open and read protein parameter file
+
+open read card unit 20 name "par_all27_prot_na.prm"
+read parameter card unit 20
+close unit 20
+
+! Read sequence from the coordinate file
+open read unit 21 card name "ch1_mini.cor" 
+read sequence coor unit 21 
+
+! Generate segment prot 
+generate FAB warn setup 
+rewind unit 21
+
+! Read coordinates
+read coordinate card unit 21
+close unit 21
+
+
+! Write output coordinates
+
+open write card unit 20 name ch1_ca.xyz
+open write card unit 21 name ch1_cb.xyz
+open write card unit 22 name ch1_ca_cb.pdb
+
+
+!start analyzing coordinations from resid=3 (to eliminate the first two residues in ch1 domain)
+set nmin 3
+set nmax 95
+
+set step @nmin
+set i 1
+set j 0
+
+label loop_res
+
+coor rgyr mass sele resid @step end
+quick sele resid @step end MASS
+
+if ?selresn .EQ. GLY then set code 0
+if ?selresn .EQ. ALA then set code 1
+if ?selresn .EQ. SER then set code 2
+if ?selresn .EQ. CYS then set code 3
+if ?selresn .EQ. VAL then set code 4
+if ?selresn .EQ. THR then set code 5
+if ?selresn .EQ. ILE then set code 6
+if ?selresn .EQ. PRO then set code 7
+if ?selresn .EQ. MET then set code 8
+if ?selresn .EQ. ASP then set code 9
+if ?selresn .EQ. ASN then set code 10
+if ?selresn .EQ. LEU then set code 11
+if ?selresn .EQ. LYS then set code 12
+if ?selresn .EQ. GLU then set code 13
+if ?selresn .EQ. GLN then set code 14
+if ?selresn .EQ. ARG then set code 15
+if ?selresn .EQ. HSD then set code 16
+if ?selresn .EQ. HIS then set code 16
+if ?selresn .EQ. PHE then set code 17
+if ?selresn .EQ. TYR then set code 18
+if ?selresn .EQ. TRP then set code 19
+if ?selresn .EQ. CYX then set code 20
+
+write title unit 21
+* ?xcm ?ycm ?zcm @code
+
+write title unit 22
+* ATOM @i P@step CB @step ?xcm ?ycm ?zcm 
+
+calc @j=@i+1
+
+coor rgyr sele type CA .and. resid @step end
+
+
+write title unit 20
+* ?xcm ?ycm ?zcm @code 
+
+write title unit 22
+* ATOM @j P@step CA @step ?xcm ?ycm ?zcm
+
+calc @i=@j+1
+
+incr step by 1
+if step le @nmax goto loop_res
+
+! === end frames loop ====
+
+stop
